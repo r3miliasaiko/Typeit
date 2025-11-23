@@ -1,0 +1,10 @@
+.idea
+.vscode
+.vs
+build
+cmake-build-*
+
+vcpkg
+.clang-tidy
+.clangd
+add_source_file.ps1

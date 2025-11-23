@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.15)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+project("Typeit" LANGUAGES CXX)
+
+
+
+set(ProjectName "Typeit")
+
+add_executable(${ProjectName})
+
+
+target_sources(${ProjectName} PRIVATE src/main.cpp
+src/test.h)
+
+
+
+target_compile_options(${ProjectName} PUBLIC 
+    $<$<COMPILE_LANG_AND_ID:CXX,MSVC>: /W4 /WX /MP>)
+
