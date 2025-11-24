@@ -1,6 +1,11 @@
-#include <cstdio>
+#include "Application.h"
+#include <iostream>
 
+int main()
+{
 
-int main() {
-    std::puts("Hello, World!");
+        Application app;
+        app.run();
+
+    return 0;
 }
