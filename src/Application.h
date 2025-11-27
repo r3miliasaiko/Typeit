@@ -7,7 +7,6 @@
 #include "screens/MenuScreen.h"
 #include "screens/ResultScreen.h"
 #include "screens/StatsScreen.h"
-#include "utils/Constants.h"
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 #include <functional>
@@ -31,7 +30,6 @@ private:
     };
     
     State m_currentState;
-    GameConfig::GameMode m_selectedMode;
     bool m_isRunning;
     ftxui::ScreenInteractive m_screen;
     
@@ -59,7 +57,7 @@ private:
     void setScreen(std::shared_ptr<BaseScreen> screen);
 
     void showMenu();
-    void startGame(GameConfig::GameMode mode);
+    void startGame();
     void showResultScreen(const GameRecord& record, bool isNewRecord);
     void showStatsScreen();
     void handleGameFinished();

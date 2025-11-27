@@ -1,18 +1,17 @@
 #pragma once
 
-#include "../utils/Constants.h"
 #include <string>
 
 class GameRecord {
 public:
-    int wpm;
-    double accuracy;
-    GameConfig::GameMode mode;
-    std::string datetime;
-    int correctWords;
-    int missedWords;
-    int wrongAttempts;
-    int maxCombo;
+    int wpm = 0;
+    double accuracy = 0.0;
+    float survivalTime = 0.0f;  // 坚持时间（秒）
+    std::string date;
+    int correctWords = 0;
+    int missedWords = 0;
+    int wrongAttempts = 0;
+    int maxCombo = 0;
     
     GameRecord() = default;
     

@@ -5,73 +5,83 @@
 #include "../models/GameRecord.h"
 #include "../managers/WordManager.h"
 #include "../utils/Constants.h"
+#include <atomic>
 #include <vector>
 #include <string>
 #include <chrono>
 #include <random>
 
-class GameEngine {
+class GameEngine
+{
 public:
     GameEngine(WordManager& wordManager);
-    
-    // 游戏控制
-    void start(GameConfig::GameMode mode, int screenWidth);
+
+    // Game control (endless mode, no time limit)
+    void start(int screenWidth);
     void update(float deltaTime);
     void pause();
     void resume();
     void stop();
-    
-    // 输入处理
+
+    // Input handling
     void handleCharInput(char c);
     void handleBackspace();
     void handleSpace();
-    
-    // 状态查询
+
+    // State queries
     bool isRunning() const { return m_isRunning; }
     bool isGameOver() const;
-    float getTimeRemaining() const;
+    float getElapsedTime() const;
     float getHealthPercentage() const { return m_stats.health; }
-    int getScreenWidth() const { return m_screenWidth; }
-    
-    // 数据访问
+    float getCurrentTeleportInterval() const { return m_currentTeleportInterval; }
+    int getVisibleWidth() const { return m_visibleWidth.load(); }
+    int getVisibleHeight() const { return m_visibleHeight.load(); }
+
+    // Data access
     const std::vector<FallingWord>& getFallingWords() const { return m_fallingWords; }
     const std::string& getCurrentInput() const { return m_currentInput; }
     const GameStats& getStats() const { return m_stats; }
     GameRecord getResult() const;
     bool shouldFlashRedBorder() const;
-    
+    void updateVisibleArea(int width, int height);
+
 private:
-    // 配置
-    GameConfig::GameMode m_mode;
     WordManager& m_wordManager;
-    int m_screenWidth;
-    
-    // 游戏状态
+    std::atomic<int> m_visibleWidth;
+    std::atomic<int> m_visibleHeight;
+
+    // Game state
     bool m_isRunning = false;
     bool m_isPaused = false;
     std::chrono::steady_clock::time_point m_startTime;
     std::chrono::steady_clock::time_point m_pauseTime;
     float m_totalPausedTime = 0.0f;
-    
-    // 单词管理
+
+    // Difficulty scaling
+    float m_currentTeleportInterval = GameConfig::BASE_TELEPORT_INTERVAL;
+    float m_currentSpawnIntervalMin = GameConfig::SPAWN_INTERVAL_MIN;
+    float m_currentSpawnIntervalMax = GameConfig::SPAWN_INTERVAL_MAX;
+
+    // Word management
     std::vector<FallingWord> m_fallingWords;
     float m_nextSpawnTime = 0.0f;
     std::random_device m_rd;
     std::mt19937 m_gen;
-    
-    // 输入
+
+    // Input
     std::string m_currentInput;
-    
-    // 统计
+
+    // Stats
     GameStats m_stats;
-    
-    // 特效
+
+    // Effects
     bool m_flashRedBorder = false;
     std::chrono::steady_clock::time_point m_flashStartTime;
-    
-    // 私有方法
+
+    // Private methods
     void spawnWord();
     void updateFallingWords(float deltaTime);
+    void updateDifficulty(float deltaTime);
     bool checkMatch(const std::string& input);
     void removeWord(size_t index);
     void onCorrectMatch();
@@ -81,4 +91,3 @@ private:
     float getRandomYPosition();
     std::string getCurrentDateTime() const;
 };
-

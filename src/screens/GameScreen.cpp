@@ -1,6 +1,9 @@
 #include "GameScreen.h"
 #include "ftxui/component/event.hpp"
+#include "ftxui/dom/canvas.hpp"
 #include "ftxui/dom/elements.hpp"
+#include <algorithm>
+#include <cmath>
 #include <iomanip>
 #include <sstream>
 #include <utility>
@@ -86,7 +89,7 @@ Component GameScreen::createComponent()
         component,
         [this]
         {
-            // Renderer 只负责渲染，不负责游戏逻辑更新
+            // Renderer only handles rendering, not game logic updates
             return render();
         }
     );
@@ -98,7 +101,7 @@ Component GameScreen::createComponent()
             {
                 return false;
             }
-            
+
             if (event == Event::Character(' ') || event == Event::Return)
             {
                 m_engine.handleSpace();
@@ -116,8 +119,6 @@ Component GameScreen::createComponent()
                 m_engine.handleBackspace();
                 return true;
             }
-
-
 
             if (event == Event::Escape)
             {
@@ -155,10 +156,15 @@ Element GameScreen::render()
 
 Element GameScreen::renderHeader()
 {
-    int timeLeft = static_cast<int>(m_engine.getTimeRemaining());
+    float elapsed = m_engine.getElapsedTime();
+    int minutes = static_cast<int>(elapsed) / 60;
+    int seconds = static_cast<int>(elapsed) % 60;
+
+    std::ostringstream timeStr;
+    timeStr << std::setfill('0') << std::setw(2) << minutes << ":" << std::setfill('0') << std::setw(2) << seconds;
 
     return hbox({
-        text("时间: " + std::to_string(timeLeft) + "s") | bold,
+        text("Time: " + timeStr.str()) | bold | color(Color::Cyan),
         text("  "),
         renderHealthBar() | flex,
         text("  "),
@@ -208,7 +214,7 @@ Element GameScreen::renderCombo()
         return text("");
     }
 
-    auto comboText = text("🔥 连击: " + std::to_string(combo) + "x");
+    auto comboText = text("Combo: " + std::to_string(combo) + "x");
 
     if (combo >= 50)
     {
@@ -230,43 +236,44 @@ Element GameScreen::renderCombo()
 
 Element GameScreen::renderGameArea()
 {
-    return renderFallingWords() | size(HEIGHT, EQUAL, GameConfig::GAME_AREA_HEIGHT);
+    // Use lambda overload, Canvas is created at render time
+    // Get actual dimensions inside lambda and update engine's visible area
+    return canvas(
+               [this](Canvas& c)
+               {
+                   int w = c.width();
+                   int h = c.height() / 2; // Canvas height is in pixels, convert to character height
+
+                   // Update visible area at render time to handle resize correctly
+                   m_engine.updateVisibleArea(w, h);
+
+                   drawFallingWords(c, w, h);
+               }
+           ) |
+           flex | reflect(m_gameAreaBox);
 }
 
-Element GameScreen::renderFallingWords()
+void GameScreen::drawFallingWords(ftxui::Canvas& canvas, int width, int height)
 {
-    std::vector<Element> lines;
-
-    // 初始化所有行为空
-    for (int i = 0; i < GameConfig::GAME_AREA_HEIGHT; ++i)
+    const auto& words = m_engine.getFallingWords();
+    for (const auto& fw : words)
     {
-        lines.push_back(text(""));
-    }
-
-    // 渲染每个飘动的单词
-    for (const auto& fw : m_engine.getFallingWords())
-    {
-        if (!fw.isVisible(m_engine.getScreenWidth()))
-            continue;
-
-        int yPos = static_cast<int>(fw.y);
-        int xPos = static_cast<int>(fw.x);
-
-        if (yPos >= 0 && yPos < GameConfig::GAME_AREA_HEIGHT)
+        if (!fw.isVisible(width))
         {
-            auto colorRGB = fw.getCurrentColor();
-
-            // 创建单词元素并设置位置和颜色
-            std::string spaces(xPos, ' ');
-            auto wordElement =
-                text(spaces + fw.word.text) |
-                color(Color::RGB(static_cast<uint8_t>(colorRGB.r), static_cast<uint8_t>(colorRGB.g), static_cast<uint8_t>(colorRGB.b)));
-
-            lines[yPos] = wordElement;
+            continue;
         }
-    }
 
-    return vbox(std::move(lines));
+        const auto colorRGB = fw.getCurrentColor();
+        const int x = std::clamp(static_cast<int>(std::round(fw.x)), 0, std::max(0, width - 1));
+        const int y = std::clamp(static_cast<int>(std::round(fw.y * 2.0f)), 0, std::max(0, height * 2 - 2));
+
+        canvas.DrawText(
+            x,
+            y,
+            fw.word.text,
+            Color::RGB(static_cast<uint8_t>(colorRGB.r), static_cast<uint8_t>(colorRGB.g), static_cast<uint8_t>(colorRGB.b))
+        );
+    }
 }
 
 Element GameScreen::renderInputBox()
@@ -274,12 +281,12 @@ Element GameScreen::renderInputBox()
     std::string displayInput = m_engine.getCurrentInput();
     if (displayInput.empty())
     {
-        displayInput = " "; // 避免空行
+        displayInput = " "; // Avoid empty line
     }
 
     return vbox({
         hbox({
-            text("输入: ") | bold,
+            text("Input: ") | bold,
             text(displayInput) | color(Color::Cyan) | bold,
             text("_") | blink,
         }),
@@ -294,13 +301,13 @@ Element GameScreen::renderStats()
     oss << std::fixed << std::setprecision(1) << stats.getAccuracy();
 
     return hbox({
-               text("正确: " + std::to_string(stats.correctWords)),
+               text("Correct: " + std::to_string(stats.correctWords)),
                text("  "),
-               text("错误: " + std::to_string(stats.wrongAttempts)),
+               text("Wrong: " + std::to_string(stats.wrongAttempts)),
                text("  "),
-               text("错过: " + std::to_string(stats.missedWords)),
+               text("Missed: " + std::to_string(stats.missedWords)),
                text("  "),
-               text("准确率: " + oss.str() + "%"),
+               text("Accuracy: " + oss.str() + "%"),
            }) |
            dim;
 }

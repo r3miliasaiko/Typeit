@@ -21,7 +21,7 @@ void RecordManager::ensureFileExists() {
     std::ifstream testFile(m_csvPath);
     if (!testFile.good()) {
         std::ofstream file(m_csvPath);
-        file << "WPM,Accuracy,Mode,DateTime,CorrectWords,MissedWords,WrongAttempts,MaxCombo\n";
+        file << "WPM,Accuracy,SurvivalTime,Date,CorrectWords,MissedWords,WrongAttempts,MaxCombo\n";
     }
 }
 
@@ -70,22 +70,12 @@ std::vector<GameRecord> RecordManager::getAllRecords() const {
     return m_records;
 }
 
-std::vector<GameRecord> RecordManager::getRecordsByMode(GameConfig::GameMode mode) const {
-    std::vector<GameRecord> result;
-    for (const auto& record : m_records) {
-        if (record.mode == mode) {
-            result.push_back(record);
-        }
-    }
-    return result;
-}
-
-GameRecord RecordManager::getBestRecord(GameConfig::GameMode mode) const {
+GameRecord RecordManager::getBestRecord() const {
     GameRecord best;
     best.wpm = 0;
     
     for (const auto& record : m_records) {
-        if (record.mode == mode && record.wpm > best.wpm) {
+        if (record.wpm > best.wpm) {
             best = record;
         }
     }
@@ -93,8 +83,21 @@ GameRecord RecordManager::getBestRecord(GameConfig::GameMode mode) const {
     return best;
 }
 
+GameRecord RecordManager::getLongestSurvivalRecord() const {
+    GameRecord longest;
+    longest.survivalTime = 0.0f;
+    
+    for (const auto& record : m_records) {
+        if (record.survivalTime > longest.survivalTime) {
+            longest = record;
+        }
+    }
+    
+    return longest;
+}
+
 bool RecordManager::isNewRecord(const GameRecord& record) const {
-    GameRecord best = getBestRecord(record.mode);
+    GameRecord best = getBestRecord();
     return record.wpm > best.wpm;
 }
 
@@ -121,7 +124,7 @@ std::vector<std::pair<std::string, double>> RecordManager::getWPMTimeSeries(int 
          i < static_cast<int>(m_records.size()); ++i) {
         const auto& record = m_records[i];
         // 只取日期部分（前10个字符）
-        std::string date = record.datetime.substr(0, std::min(10, static_cast<int>(record.datetime.length())));
+        std::string date = record.date.substr(0, std::min(10, static_cast<int>(record.date.length())));
         result.emplace_back(date, record.wpm);
     }
     
@@ -131,7 +134,7 @@ std::vector<std::pair<std::string, double>> RecordManager::getWPMTimeSeries(int 
 void RecordManager::sortRecordsByDate() {
     std::sort(m_records.begin(), m_records.end(),
         [](const GameRecord& a, const GameRecord& b) {
-            return a.datetime < b.datetime;
+            return a.date < b.date;
         });
 }
 

@@ -14,8 +14,8 @@ public:
     bool saveRecord(const GameRecord& record);
     
     std::vector<GameRecord> getAllRecords() const;
-    std::vector<GameRecord> getRecordsByMode(GameConfig::GameMode mode) const;
-    GameRecord getBestRecord(GameConfig::GameMode mode) const;
+    GameRecord getBestRecord() const;  // 最高 WPM
+    GameRecord getLongestSurvivalRecord() const;  // 最长坚持时间
     bool isNewRecord(const GameRecord& record) const;
     
     // 统计方法

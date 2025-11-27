@@ -5,7 +5,6 @@ using namespace ftxui;
 
 Application::Application()
     : m_currentState(State::Menu)
-    , m_selectedMode(GameConfig::GameMode::Thirty)
     , m_isRunning(true)
     , m_screen(ScreenInteractive::Fullscreen())
     , m_gameEngine(m_wordManager)
@@ -122,14 +121,8 @@ void Application::showMenu()
         {
             switch (option)
             {
-            case MenuScreen::MenuOption::Start30s:
-                startGame(GameConfig::GameMode::Thirty);
-                break;
-            case MenuScreen::MenuOption::Start60s:
-                startGame(GameConfig::GameMode::Sixty);
-                break;
-            case MenuScreen::MenuOption::Start120s:
-                startGame(GameConfig::GameMode::OneTwenty);
+            case MenuScreen::MenuOption::StartGame:
+                startGame();
                 break;
             case MenuScreen::MenuOption::ViewStats:
                 showStatsScreen();
@@ -148,11 +141,10 @@ void Application::showMenu()
     setScreen(menuScreen);
 }
 
-void Application::startGame(GameConfig::GameMode mode)
+void Application::startGame()
 {
     constexpr int kScreenWidth = 100;
-    m_selectedMode = mode;
-    m_gameEngine.start(mode, kScreenWidth);
+    m_gameEngine.start(kScreenWidth);
 
     auto gameScreen = std::make_shared<GameScreen>(m_gameEngine, m_screen, [this]() { handleGameFinished(); }, [this]() { showMenu(); });
 

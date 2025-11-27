@@ -33,7 +33,7 @@ Component ResultScreen::createComponent()
 
             elements.push_back(renderStats());
             elements.push_back(text(""));
-            elements.push_back(text("按 Enter 返回主菜单") | center | dim);
+            elements.push_back(text("Press Enter to return to menu") | center | dim);
             elements.push_back(text(""));
 
             return vbox(std::move(elements)) | border | center;
@@ -61,11 +61,11 @@ Component ResultScreen::createComponent()
 Element ResultScreen::renderTitle()
 {
     return vbox({
-        text("╔═══════════════════════════════════════╗") | center | bold,
-        text("║                                       ║") | center,
-        text("║          🎉 游戏结束 🎉              ║") | center | bold | color(Color::Yellow),
-        text("║                                       ║") | center,
-        text("╚═══════════════════════════════════════╝") | center | bold,
+        text("+=======================================+") | center | bold,
+        text("|                                       |") | center,
+        text("|            GAME OVER                  |") | center | bold | color(Color::Yellow),
+        text("|                                       |") | center,
+        text("+=======================================+") | center | bold,
     });
 }
 
@@ -74,19 +74,12 @@ Element ResultScreen::renderStats()
     std::ostringstream accOss;
     accOss << std::fixed << std::setprecision(1) << m_record.accuracy;
 
-    std::string modeStr;
-    switch (m_record.mode)
-    {
-    case GameConfig::GameMode::Thirty:
-        modeStr = "30s";
-        break;
-    case GameConfig::GameMode::Sixty:
-        modeStr = "60s";
-        break;
-    case GameConfig::GameMode::OneTwenty:
-        modeStr = "120s";
-        break;
-    }
+    // Format survival time
+    int totalSeconds = static_cast<int>(m_record.survivalTime);
+    int minutes = totalSeconds / 60;
+    int seconds = totalSeconds % 60;
+    std::ostringstream timeOss;
+    timeOss << minutes << "m " << seconds << "s";
 
     return vbox({
         hbox({
@@ -95,37 +88,37 @@ Element ResultScreen::renderStats()
         }) | center,
         text(""),
         hbox({
-            text("准确率: ") | bold,
+            text("Survival Time: ") | bold,
+            text(timeOss.str()) | color(Color::Yellow) | bold,
+        }) | center,
+        text(""),
+        hbox({
+            text("Accuracy: ") | bold,
             text(accOss.str() + "%") | color(Color::Green) | bold,
         }) | center,
         text(""),
         hbox({
-            text("模式: ") | bold,
-            text(modeStr) | color(Color::Yellow),
-        }) | center,
-        text(""),
-        hbox({
-            text("最大连击: ") | bold,
+            text("Max Combo: ") | bold,
             text(std::to_string(m_record.maxCombo) + "x") | color(Color::Red) | bold,
         }) | center,
         text(""),
         hbox({
-            text("正确: ") | color(Color::Green),
+            text("Correct: ") | color(Color::Green),
             text(std::to_string(m_record.correctWords)),
-            text("  错误: ") | color(Color::Red),
+            text("  Wrong: ") | color(Color::Red),
             text(std::to_string(m_record.wrongAttempts)),
-            text("  错过: ") | color(Color::Yellow),
+            text("  Missed: ") | color(Color::Yellow),
             text(std::to_string(m_record.missedWords)),
         }) | center |
             dim,
         text(""),
-        text("日期: " + m_record.datetime) | center | dim,
+        text("Date: " + m_record.date) | center | dim,
     });
 }
 
 Element ResultScreen::renderNewRecordBadge()
 {
     return vbox({
-        text("⭐ ⭐ ⭐ 新纪录！ ⭐ ⭐ ⭐") | center | bold | color(Color::RedLight) | blink,
+        text("*** NEW RECORD! ***") | center | bold | color(Color::RedLight) | blink,
     });
 }
