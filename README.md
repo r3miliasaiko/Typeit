@@ -20,7 +20,7 @@ A terminal-based typing game built with [FTXUI](https://github.com/ArthurSonzogn
 
 ```powershell
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/Typeit.git
+git clone https://github.com/r3miliasaiko/Typeit.git
 cd Typeit
 
 # Configure using VS2022 preset
@@ -39,7 +39,7 @@ cmake --build build/windows-vs2022 --config Release
 sudo apt-get install build-essential cmake ninja-build
 
 # Clone and build
-git clone https://github.com/YOUR_USERNAME/Typeit.git
+git clone https://github.com/r3miliasaiko/Typeit.git
 cd Typeit
 
 cmake --preset linux-base
