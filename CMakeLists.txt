@@ -32,13 +32,14 @@ target_sources(${ProjectName} PRIVATE
     src/utils/GameConfig.cpp
 )
 
-
+option(FTXUI_ENABLE_INSTALL OFF)
 include(FetchContent)
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
   GIT_TAG v6.1.9
 )
 FetchContent_MakeAvailable(ftxui)
+
 
 
 target_link_libraries(${ProjectName} PRIVATE
@@ -52,4 +53,38 @@ target_link_libraries(${ProjectName} PRIVATE
 
 target_compile_options(${ProjectName} PUBLIC 
     $<$<COMPILE_LANG_AND_ID:CXX,MSVC>: /W4 /WX /MP>)
+
+# Install rules
+include(GNUInstallDirs)
+
+# Install executable
+install(TARGETS ${ProjectName}
+    RUNTIME DESTINATION .
+)
+
+# Install data files to same directory as executable
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/data
+    DESTINATION .
+)
+
+# Copy data files to build directory for development
+add_custom_command(TARGET ${ProjectName} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/data
+    $<TARGET_FILE_DIR:${ProjectName}>/data
+    COMMENT "Copying data files to build directory"
+)
+
+# CPack configuration
+set(CPACK_PACKAGE_NAME "Typeit")
+set(CPACK_PACKAGE_VENDOR "Typeit")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Terminal-based typing game")
+set(CPACK_PACKAGE_VERSION_MAJOR "1")
+set(CPACK_PACKAGE_VERSION_MINOR "0")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_GENERATOR "ZIP")
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+
+include(CPack)
 

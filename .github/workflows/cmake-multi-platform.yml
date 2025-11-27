@@ -17,11 +17,22 @@ jobs:
 
     - uses: ilammy/msvc-dev-cmd@v1
 
+    - name: Configure CMake
+      run: cmake --preset windows-ninja-msvc
 
-    - name: Run CMake
+    - name: Build
+      run: cmake --build --preset windows-ninja-msvc-release
+
+    - name: Package with CPack
       run: |
-        cmake --preset windows-ninja-msvc
-        cmake --build --preset windows-ninja-msvc-release
+        cd build/windows-ninja-msvc
+        cpack -C Release
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Typeit-windows-x64
+        path: build/windows-ninja-msvc/*.zip
 
   ubuntu-build:
     runs-on: ubuntu-latest
@@ -29,8 +40,20 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Run CMake
+    - name: Configure CMake
+      run: cmake --preset linux-base
+
+    - name: Build
+      run: cmake --build --preset linux-build
+
+    - name: Package with CPack
       run: |
-        cmake --preset linux-base
-        cmake --build --preset linux-build
+        cd build/linux-base
+        cpack -C Release
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Typeit-linux-x64
+        path: build/linux-base/*.zip
 
