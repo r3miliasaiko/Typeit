@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "utils/GameConfig.h"
 #include <iostream>
 
 using namespace ftxui;
@@ -25,8 +26,8 @@ void Application::run()
 
     if (!loadResources())
     {
-        std::cerr << "错误：无法加载资源文件！\n";
-        std::cerr << "请确保 data/words.txt 文件存在。\n";
+        std::cerr << "Error: Failed to load resources!\n";
+        std::cerr << "Please ensure data/words.txt exists.\n";
         return;
     }
 
@@ -41,12 +42,14 @@ void Application::run()
 
 void Application::initialize()
 {
+    // Load config file (creates default if not exists)
+    ConfigManager::instance().loadFromFile();
     m_recordManager.loadRecords();
 }
 
 bool Application::loadResources()
 {
-    return m_wordManager.loadFromFile(GameConfig::WORDS_FILE);
+    return m_wordManager.loadFromFile(GamePaths::WORDS_FILE);
 }
 
 ftxui::Component Application::buildRootComponent()
@@ -59,7 +62,7 @@ ftxui::Component Application::buildRootComponent()
             {
                 return m_activeComponent->Render();
             }
-            return ftxui::text("加载中...") | center;
+            return ftxui::text("Loading...") | center;
         }
     );
 

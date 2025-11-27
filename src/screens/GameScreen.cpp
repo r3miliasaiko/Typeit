@@ -1,4 +1,5 @@
 #include "GameScreen.h"
+#include "../utils/GameConfig.h"
 #include "ftxui/component/event.hpp"
 #include "ftxui/dom/canvas.hpp"
 #include "ftxui/dom/elements.hpp"
@@ -207,9 +208,10 @@ Element GameScreen::renderHealthBar()
 
 Element GameScreen::renderCombo()
 {
+    const auto& cfg = ConfigManager::instance().settings();
     int combo = m_engine.getStats().currentCombo;
 
-    if (combo < GameConfig::MIN_COMBO_DISPLAY)
+    if (combo < cfg.minComboDisplay)
     {
         return text("");
     }

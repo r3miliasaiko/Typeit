@@ -29,6 +29,7 @@ target_sources(${ProjectName} PRIVATE
     src/screens/GameScreen.cpp
     src/screens/ResultScreen.cpp
     src/screens/StatsScreen.cpp
+    src/utils/GameConfig.cpp
 )
 
 

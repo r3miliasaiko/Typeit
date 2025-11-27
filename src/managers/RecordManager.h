@@ -1,24 +1,24 @@
 #pragma once
 
 #include "../models/GameRecord.h"
-#include "../utils/Constants.h"
+#include "../utils/GameConfig.h"
 #include <vector>
 #include <string>
 #include <utility>
 
 class RecordManager {
 public:
-    RecordManager(const std::string& csvPath = GameConfig::RECORDS_FILE);
+    RecordManager(const std::string& csvPath = GamePaths::RECORDS_FILE);
     
     bool loadRecords();
     bool saveRecord(const GameRecord& record);
     
     std::vector<GameRecord> getAllRecords() const;
-    GameRecord getBestRecord() const;  // 最高 WPM
-    GameRecord getLongestSurvivalRecord() const;  // 最长坚持时间
+    GameRecord getBestRecord() const;
+    GameRecord getLongestSurvivalRecord() const;
     bool isNewRecord(const GameRecord& record) const;
     
-    // 统计方法
+    // Stats methods
     std::vector<double> getRecentWPMAverage(int lastN = 100) const;
     std::vector<std::pair<std::string, double>> getWPMTimeSeries(int lastN = 100) const;
     

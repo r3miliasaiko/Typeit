@@ -4,7 +4,7 @@
 #include "../models/GameStats.h"
 #include "../models/GameRecord.h"
 #include "../managers/WordManager.h"
-#include "../utils/Constants.h"
+#include "../utils/GameConfig.h"
 #include <atomic>
 #include <vector>
 #include <string>
@@ -57,10 +57,10 @@ private:
     std::chrono::steady_clock::time_point m_pauseTime;
     float m_totalPausedTime = 0.0f;
 
-    // Difficulty scaling
-    float m_currentTeleportInterval = GameConfig::BASE_TELEPORT_INTERVAL;
-    float m_currentSpawnIntervalMin = GameConfig::SPAWN_INTERVAL_MIN;
-    float m_currentSpawnIntervalMax = GameConfig::SPAWN_INTERVAL_MAX;
+    // Difficulty scaling (initialized in start())
+    float m_currentTeleportInterval = 1.5f;
+    float m_currentSpawnIntervalMin = 2.0f;
+    float m_currentSpawnIntervalMax = 4.0f;
 
     // Word management
     std::vector<FallingWord> m_fallingWords;

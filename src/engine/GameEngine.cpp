@@ -4,28 +4,28 @@
 #include <iomanip>
 #include <sstream>
 
-GameEngine::GameEngine(WordManager& wordManager)
-    : m_wordManager(wordManager), m_visibleWidth(100), m_visibleHeight(GameConfig::GAME_AREA_HEIGHT), m_gen(m_rd())
-{}
+GameEngine::GameEngine(WordManager& wordManager) : m_wordManager(wordManager), m_visibleWidth(100), m_visibleHeight(15), m_gen(m_rd()) {}
 
 void GameEngine::start(int screenWidth)
 {
-    updateVisibleArea(screenWidth, GameConfig::GAME_AREA_HEIGHT);
+    const auto& cfg = ConfigManager::instance().settings();
+
+    updateVisibleArea(screenWidth, cfg.gameAreaHeight);
     m_isRunning = true;
     m_isPaused = false;
     m_startTime = std::chrono::steady_clock::now();
     m_totalPausedTime = 0.0f;
 
-    // Reset difficulty
-    m_currentTeleportInterval = GameConfig::BASE_TELEPORT_INTERVAL;
-    m_currentSpawnIntervalMin = GameConfig::SPAWN_INTERVAL_MIN;
-    m_currentSpawnIntervalMax = GameConfig::SPAWN_INTERVAL_MAX;
+    // Reset difficulty from config
+    m_currentTeleportInterval = cfg.baseTeleportInterval;
+    m_currentSpawnIntervalMin = cfg.spawnIntervalMin;
+    m_currentSpawnIntervalMax = cfg.spawnIntervalMax;
 
     // Reset state
     m_fallingWords.clear();
     m_currentInput.clear();
     m_stats = GameStats();
-    m_stats.health = GameConfig::MAX_HEALTH;
+    m_stats.health = cfg.maxHealth;
 
     m_nextSpawnTime = getRandomSpawnInterval();
     m_flashRedBorder = false;
@@ -36,6 +36,8 @@ void GameEngine::update(float deltaTime)
     if (!m_isRunning || m_isPaused)
         return;
 
+    const auto& cfg = ConfigManager::instance().settings();
+
     // Update difficulty (teleport interval decreases over time)
     updateDifficulty(deltaTime);
 
@@ -44,7 +46,7 @@ void GameEngine::update(float deltaTime)
 
     // Check if we need to spawn a new word
     m_nextSpawnTime -= deltaTime;
-    if (m_nextSpawnTime <= 0.0f && m_fallingWords.size() < GameConfig::MAX_CONCURRENT_WORDS)
+    if (m_nextSpawnTime <= 0.0f && static_cast<int>(m_fallingWords.size()) < cfg.maxConcurrentWords)
     {
         spawnWord();
         m_nextSpawnTime = getRandomSpawnInterval();
@@ -55,7 +57,7 @@ void GameEngine::update(float deltaTime)
     {
         auto now = std::chrono::steady_clock::now();
         float elapsed = std::chrono::duration<float>(now - m_flashStartTime).count();
-        if (elapsed >= GameConfig::BORDER_FLASH_DURATION)
+        if (elapsed >= cfg.borderFlashDuration)
         {
             m_flashRedBorder = false;
         }
@@ -186,15 +188,17 @@ void GameEngine::spawnWord()
 
 void GameEngine::updateDifficulty(float deltaTime)
 {
+    const auto& cfg = ConfigManager::instance().settings();
+
     // Teleport interval decreases over time (words teleport faster)
-    m_currentTeleportInterval -= GameConfig::TELEPORT_INTERVAL_DECREASE * deltaTime;
-    m_currentTeleportInterval = std::max(m_currentTeleportInterval, GameConfig::MIN_TELEPORT_INTERVAL);
+    m_currentTeleportInterval -= cfg.teleportIntervalDecrease * deltaTime;
+    m_currentTeleportInterval = std::max(m_currentTeleportInterval, cfg.minTeleportInterval);
 
     // Spawn interval decreases over time (more words spawn)
-    m_currentSpawnIntervalMin -= GameConfig::SPAWN_INTERVAL_DECREASE * deltaTime;
-    m_currentSpawnIntervalMax -= GameConfig::SPAWN_INTERVAL_DECREASE * deltaTime;
-    m_currentSpawnIntervalMin = std::max(m_currentSpawnIntervalMin, GameConfig::MIN_SPAWN_INTERVAL);
-    m_currentSpawnIntervalMax = std::max(m_currentSpawnIntervalMax, GameConfig::MIN_SPAWN_INTERVAL + 0.2f);
+    m_currentSpawnIntervalMin -= cfg.spawnIntervalDecrease * deltaTime;
+    m_currentSpawnIntervalMax -= cfg.spawnIntervalDecrease * deltaTime;
+    m_currentSpawnIntervalMin = std::max(m_currentSpawnIntervalMin, cfg.minSpawnInterval);
+    m_currentSpawnIntervalMax = std::max(m_currentSpawnIntervalMax, cfg.minSpawnInterval + 0.2f);
 }
 
 void GameEngine::updateFallingWords(float deltaTime)
@@ -249,10 +253,11 @@ void GameEngine::removeWord(size_t index)
 
 void GameEngine::onCorrectMatch()
 {
+    const auto& cfg = ConfigManager::instance().settings();
     m_stats.onCorrect();
 
     // Gain health
-    m_stats.health = std::min(m_stats.health + GameConfig::HEALTH_GAIN, GameConfig::MAX_HEALTH_CAP);
+    m_stats.health = std::min(m_stats.health + cfg.healthGain, cfg.healthCap);
 }
 
 void GameEngine::onWrongMatch()
@@ -266,10 +271,11 @@ void GameEngine::onWrongMatch()
 
 void GameEngine::onWordMissed()
 {
+    const auto& cfg = ConfigManager::instance().settings();
     m_stats.onMiss();
 
     // Lose health
-    m_stats.health -= GameConfig::HEALTH_LOSS;
+    m_stats.health -= cfg.healthLoss;
     if (m_stats.health < 0.0f)
     {
         m_stats.health = 0.0f;

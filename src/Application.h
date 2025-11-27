@@ -33,12 +33,12 @@ private:
     bool m_isRunning;
     ftxui::ScreenInteractive m_screen;
     
-    // 管理器
+    // Managers
     WordManager m_wordManager;
     RecordManager m_recordManager;
     GameEngine m_gameEngine;
     
-    // 结果数据
+    // Result data
     GameRecord m_lastGameRecord;
     bool m_isNewRecord;
     
