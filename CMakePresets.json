@@ -50,7 +50,7 @@
           "strategy": "external"
         },
         "cacheVariables": {
-          "CMAKE_CXX_COMPILER": "cl.exe",
+          "CMAKE_CXX_COMPILER": "cl",
         "CMAKE_LINKER": "link",
           "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
         }
