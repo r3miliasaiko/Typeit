@@ -5,18 +5,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 
+project(Typeit LANGUAGES CXX)
+
+add_executable(${PROJECT_NAME})
 
 
-
-set(ProjectName "Typeit")
-
-
-project(${ProjectName} LANGUAGES CXX)
-
-add_executable(${ProjectName})
-
-
-target_sources(${ProjectName} PRIVATE 
+target_sources(${PROJECT_NAME} PRIVATE 
     src/main.cpp
     src/Application.cpp
     src/models/Word.cpp
@@ -42,7 +36,7 @@ FetchContent_MakeAvailable(ftxui)
 
 
 
-target_link_libraries(${ProjectName} PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATE
     ftxui::component
     ftxui::dom
     ftxui::screen
@@ -51,14 +45,14 @@ target_link_libraries(${ProjectName} PRIVATE
 
 
 
-target_compile_options(${ProjectName} PUBLIC 
+target_compile_options(${PROJECT_NAME} PUBLIC 
     $<$<COMPILE_LANG_AND_ID:CXX,MSVC>: /W4 /WX /MP>)
 
 # Install rules
 include(GNUInstallDirs)
 
 # Install executable
-install(TARGETS ${ProjectName}
+install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION .
 )
 
@@ -68,10 +62,10 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/data
 )
 
 # Copy data files to build directory for development
-add_custom_command(TARGET ${ProjectName} POST_BUILD
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/data
-    $<TARGET_FILE_DIR:${ProjectName}>/data
+    $<TARGET_FILE_DIR:${PROJECT_NAME}>/data
     COMMENT "Copying data files to build directory"
 )
 
